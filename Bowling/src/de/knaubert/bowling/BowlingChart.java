@@ -3,7 +3,7 @@ package de.knaubert.bowling;
 import java.util.Scanner;
 
 /*
- * Object for bowling chart
+ * Object to generate bowling chart
  * 
  * @author M.Knaubert
  */
@@ -12,6 +12,7 @@ public class BowlingChart {
 
 	int frameArraySize = 10;
 	Frame[] frameArray = new Frame[frameArraySize];
+	String cRlF = System.getProperty("line.separator");
 
 	/*
 	 * Constructor
@@ -28,11 +29,11 @@ public class BowlingChart {
 		System.out.println("Bowling-Game");
 		System.out.println("V 0.02");
 		System.out.println("by M.Knaubert");
-		System.out.println(System.getProperty("line.separator"));
+		System.out.println(cRlF);
 		System.out.println("Ready to start game (automatic)???");
 		this.waitForKeyPressed("Press ENTER to continue!");
 
-		this.startAutomaticPlay();
+		this.startPlay(false); //true = automatic, false = interactive
 	}
 
 	/*
@@ -91,7 +92,7 @@ public class BowlingChart {
 			}
 			secondLine += tmpSecond + "|";
 		}
-		return firstLine + System.getProperty("line.separator") + secondLine;
+		return cRlF + firstLine + cRlF + secondLine;
 	}
 
 	/*
@@ -106,13 +107,34 @@ public class BowlingChart {
 	 */
 	private int getRandomRoll(int max) {
 		return (int) (Math.random() * (max + 1));
-		// return 10;
+		//return 10; // max test... result must be 300
 	}
 
 	/*
+	 * User enters number to roll
+	 */
+	@SuppressWarnings("resource")
+	private int getNumberFromConsole(int frameNr, int rollNr, int max) {
+		int number = 0;
+		String message = "Enter points for roll '" + rollNr + "' in frame '" + (frameNr+1) + "' (0-" + max + "):";
+		Scanner in = new Scanner(System.in);
+		do
+		{		
+			System.out.println(message);
+			number = in.nextInt();	
+		}
+		while(number > max);	
+		//in.close();	
+		if (number == 10)
+			System.out.println("STRIKE !!!");
+		return number;
+	}
+	
+	
+	/*
 	 * Start automatic bowling with random values
 	 */
-	public void startAutomaticPlay() {
+	public void startPlay(boolean isAutomatic) {
 		boolean isPreviousSpare = false;
 		int isPreviousStrike = 0;
 		int count = 0;
@@ -124,7 +146,11 @@ public class BowlingChart {
 			Frame currFrame = frameArray[count];
 
 			// first roll
-			int first = getRandomRoll(10);
+			int first = 0;
+			if (isAutomatic)
+				first = getRandomRoll(10);
+			else
+				first = getNumberFromConsole(count, 1, 10);
 			currFrame.firstRoll = first;
 
 			// bonus previous roll was spare?
@@ -153,7 +179,13 @@ public class BowlingChart {
 				zw = first;
 
 				// second roll
-				int second = getRandomRoll(10 - first);
+				int second = 0;
+				
+				if (isAutomatic)
+					second = getRandomRoll(10 - first);
+				else
+					second = getNumberFromConsole(count, 2, 10-first);
+				
 				currFrame.secondRoll = second;
 
 				// bonus for previous strike
@@ -180,28 +212,46 @@ public class BowlingChart {
 		// last frame
 		if (isPreviousStrike > 0) {
 			if (isPreviousStrike > 1) {
-				int second = getRandomRoll(10);
+				int second = 0;
+				if (isAutomatic)
+					second = getRandomRoll(10);
+				else
+					second = getNumberFromConsole(count-1, 2, 10);
 				frameArray[count - 1].secondRoll = second;
 				addBonusForFrame(count -2, second);
-				addBonusForFrame(count -1, second);
+				addBonusForFrame(count -1, second);					
 			}
-			int third = getRandomRoll(10);
+			int third = 0;
+			if (isAutomatic)
+				third = getRandomRoll(10);
+			else
+				third = getNumberFromConsole(count-1, 3, 10);
 			frameArray[count -1].additionalRoll = third;
-			addBonusForFrame(count - 1, third);
-			frameArray[count -1].points += third;
+			frameArray[count -1].points += third; 	//added normal number
+			addBonusForFrame(count -1, third); 		//added as bonus
+		}
+		if (isPreviousSpare)
+		{
+			int third = 0;
+			if (isAutomatic)
+				third = getRandomRoll(10);
+			else
+				third = getNumberFromConsole(count-1, 3, 10);
+			frameArray[count -1].additionalRoll = third;
+			addBonusForFrame(count -1, third);
 		}
 	}
+
 
 	/*
 	 * Wait for keyboard entry in console
 	 */
+	@SuppressWarnings("resource")
 	public void waitForKeyPressed(String message) {
 		Scanner scan = new Scanner(System.in);
 		System.out.println(message);
 		scan.nextLine();
-		scan.close();
 	}
-
 	
 	
 	/*
