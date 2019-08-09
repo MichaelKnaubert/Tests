@@ -13,6 +13,7 @@ public class BowlingChart {
 	int frameArraySize = 10;
 	Frame[] frameArray = new Frame[frameArraySize];
 	String cRlF = System.getProperty("line.separator");
+	boolean isAutomatic= false; //true = automatic, false = interactive
 
 	/*
 	 * Constructor
@@ -27,13 +28,16 @@ public class BowlingChart {
 	private void init() {
 		initFrameArray();
 		System.out.println("Bowling-Game");
-		System.out.println("V 0.02");
+		System.out.println("V 0.03");
 		System.out.println("by M.Knaubert");
+		
+		this.selectPlayMode();		
+		
 		System.out.println(cRlF);
-		System.out.println("Ready to start game (automatic)???");
+		System.out.println("Ready to start game (" + ((isAutomatic) ? "automatic" : "interactive") + ")???");
 		this.waitForKeyPressed("Press ENTER to continue!");
 
-		this.startPlay(false); //true = automatic, false = interactive
+		this.startPlay(); 
 	}
 
 	/*
@@ -126,15 +130,18 @@ public class BowlingChart {
 		while(number > max);	
 		//in.close();	
 		if (number == 10)
-			System.out.println("STRIKE !!!");
+			System.out.println("STRIKE !!!" + cRlF);
+		else 
+			if (number == max)
+				System.out.println("Spare !" + cRlF);
 		return number;
 	}
 	
 	
 	/*
-	 * Start automatic bowling with random values
+	 * Start bowling game
 	 */
-	public void startPlay(boolean isAutomatic) {
+	public void startPlay() {
 		boolean isPreviousSpare = false;
 		int isPreviousStrike = 0;
 		int count = 0;
@@ -255,6 +262,28 @@ public class BowlingChart {
 	
 	
 	/*
+	 * Select play mode of bowling game
+	 */
+	private void selectPlayMode() {
+		String message = cRlF + "Please select play mode of this bowling game:";
+		message += cRlF + "Press A for automatic game";
+		message += cRlF + "or M for manual input of the points!";
+		System.out.println(message);
+		String keyPressed = "";
+		Scanner scan = new Scanner(System.in);
+		
+		while ((!keyPressed.equals("A")) && (!keyPressed.equals("M"))) {
+			keyPressed=String.valueOf(scan.next().charAt(0)).toUpperCase();		
+		}
+		if (keyPressed.equals("A"))
+			this.isAutomatic = true;
+		else
+			this.isAutomatic = false;		
+	}
+	
+	
+	
+	/*
 	 * main method 
 	 */
 	public static void main(String[] args) {
@@ -262,6 +291,6 @@ public class BowlingChart {
 		BowlingChart chart = new BowlingChart();
 		System.out.println(chart.toString());
 		System.out.println("This is your bowling chart!");
-
+		System.out.println("'_/_' means spare, '_X_' means strike!");
 	}
 }
