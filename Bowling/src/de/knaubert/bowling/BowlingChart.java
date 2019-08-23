@@ -127,7 +127,7 @@ public class BowlingChart {
 			System.out.println(message);
 			number = in.nextInt();	
 		}
-		while(number > max);	
+		while(number > max && number < 0);	
 		//in.close();	
 		if (number == 10)
 			System.out.println("STRIKE !!!" + cRlF);
